@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Triangle Outlines with Chevron Masks</title>
+    <style>
+        body {
+            display: flex;
+            align-items: flex-start;
+            /* font-family: Arial, sans-serif; */
+            padding: 20px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: #f9f9f9;
+        }
+
+        #canvas {
+            border: 1px solid #ccc;
+            background: white;
+        }
+
+        .canvas-container {
+            position: sticky;
+            top: 20px;
+        }
+
+        .controls-wrapper {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            max-width: 500px;
+            margin-left: 20px;
+        }
+
+        .controls, .chevron-controls, .crossover-controls {
+            width: 100%;
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 2px;
+            outline: 1px black solid;
+            border-radius: 10px;
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-bottom: 1rem;
+        }
+
+        .slider-container label {
+            min-width: 120px;
+        }
+
+        .slider-container input[type="range"] {
+            flex: 1;
+        }
+
+        .slider-container span {
+            min-width: 40px;
+            text-align: right;
+        }
+
+        .leg-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .leg-group {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .leg-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .sync-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        input[type="range"] {
+            accent-color: #666;
+        }
+
+        input[type="checkbox"],
+        input[type="radio"] {
+            margin: 0;
+        }
+
+        label {
+            font-weight: 500;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="canvas-container">
+        <svg id="canvas" width="800" height="800">
+            <defs>
+                <mask id="mask1" maskUnits="userSpaceOnUse"> <!-- must account for big strokes -->
+                <rect width="100%" height="100%" fill="white"/>
+                <path id="chevron1" fill="none" stroke="black" stroke-width="1"/>
+                <path id="crossover1" fill="black" stroke="none" stroke-width="1"/>
+                <path id="crossover1opposing" fill="black" stroke="none" stroke-width="1"/>
+
+            </mask>
+            <mask id="mask2" maskUnits="userSpaceOnUse">
+                <rect width="100%" height="100%" fill="white"/>
+                <path id="chevron2" fill="none" stroke="black" stroke-width="1"/>
+                <path id="crossover2" fill="black" stroke="none" stroke-width="1"/>
+                <path id="crossover2opposing" fill="black" stroke="none" stroke-width="1"/>
+            </mask>
+            <mask id="mask3" maskUnits="userSpaceOnUse">
+                <rect width="100%" height="100%" fill="white"/>
+                <path id="chevron3" fill="none" stroke="black" stroke-width="1"/>
+                <path id="crossover3" fill="black" stroke="none" stroke-width="1"/>
+                <path id="crossover3opposing" fill="black" stroke="none" stroke-width="1"/>
+                <path id="triangleWeaveBackingMask" fill="none" stroke="black" />
+                <path id="triangleWeaveTopMask" fill="none" stroke="black" />
+            </mask>
+        </defs>
+
+        <path id="triangle2backing" fill="none" stroke="white"/>
+        <path id="triangle2" fill="none" stroke="black" mask="url(#mask2)"/>
+
+        <path id="triangle1backing" fill="none" stroke="white"/>
+        <path id="triangle1" fill="none" stroke="black" mask="url(#mask1)"/>
+        
+        <path id="triangle3backing" fill="none" stroke="white" mask="url(#mask3)"/>
+        <path id="triangle3" fill="none" stroke="black" mask="url(#mask3)"/>
+    </svg>
+    </div>
+    
+    <div class="controls-wrapper">
+        <button onclick="window.location.hash = '#W3siZmllbGROYW1lIjoic3Ryb2tlLXdpZHRoIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjQxIn0seyJmaWVsZE5hbWUiOiJ0cmlhbmdsZS1zaXplIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjQyOCJ9LHsiZmllbGROYW1lIjoic3BhY2luZy1zaXplIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjExNyJ9LHsiZmllbGROYW1lIjoiYmFja2luZy1zaXplIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjM1In0seyJmaWVsZE5hbWUiOiJjaGV2cm9uLXN0cm9rZSIsImZpZWxkVHlwZSI6InZhbHVlIiwidmFsdWUiOiIxNCJ9LHsiZmllbGROYW1lIjoiY2hldnJvbi1kZXB0aCIsImZpZWxkVHlwZSI6InZhbHVlIiwidmFsdWUiOiItMS4yIn0seyJmaWVsZE5hbWUiOiJjcm9zc292ZXJQb3NpdGlvbjEiLCJmaWVsZFR5cGUiOiJ2YWx1ZSIsInZhbHVlIjoiNjguNjUzNjc5ODczODYyIn0seyJmaWVsZE5hbWUiOiJjcm9zc292ZXJQb3NpdGlvbjIiLCJmaWVsZFR5cGUiOiJ2YWx1ZSIsInZhbHVlIjoiNjguNjUzNjc5ODczODYyIn0seyJmaWVsZE5hbWUiOiJjcm9zc292ZXJQb3NpdGlvbjMiLCJmaWVsZFR5cGUiOiJ2YWx1ZSIsInZhbHVlIjoiNjguNjUzNjc5ODczODYyIn0seyJmaWVsZE5hbWUiOiJwb3NpdGlvbjEiLCJmaWVsZFR5cGUiOiJ2YWx1ZSIsInZhbHVlIjoiMC41Mzg1NTM0ODE1MTE2MjIifSx7ImZpZWxkTmFtZSI6InBvc2l0aW9uMiIsImZpZWxkVHlwZSI6InZhbHVlIiwidmFsdWUiOiIwLjUzODU1MzQ4MTUxMTYyMiJ9LHsiZmllbGROYW1lIjoicG9zaXRpb24zIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjAuNTM4NTUzNDgxNTExNjIyIn0seyJmaWVsZE5hbWUiOiJjcm9zc292ZXItZGVwdGgiLCJmaWVsZFR5cGUiOiJ2YWx1ZSIsInZhbHVlIjoiMC4wNjQwNjAwMjU2MzkwOTIxIn0seyJmaWVsZE5hbWUiOiJzaG91bGQtd2VhdmUiLCJmaWVsZFR5cGUiOiJjaGVjayIsInZhbHVlIjp0cnVlfSx7ImZpZWxkTmFtZSI6InN5bmMtcG9zaXRpb25zIiwiZmllbGRUeXBlIjoiY2hlY2siLCJ2YWx1ZSI6dHJ1ZX0seyJmaWVsZE5hbWUiOiJzeW5jLWNyb3Nzb3Zlci1wb3NpdGlvbnMiLCJmaWVsZFR5cGUiOiJjaGVjayIsInZhbHVlIjp0cnVlfV0'; loadFromURL();">Design 1</button>
+        <button onclick="window.location.hash = '#W3siZmllbGROYW1lIjoic3Ryb2tlLXdpZHRoIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjQxIn0seyJmaWVsZE5hbWUiOiJ0cmlhbmdsZS1zaXplIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjMxNCJ9LHsiZmllbGROYW1lIjoic3BhY2luZy1zaXplIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjExNyJ9LHsiZmllbGROYW1lIjoiYmFja2luZy1zaXplIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjM1In0seyJmaWVsZE5hbWUiOiJjaGV2cm9uLXN0cm9rZSIsImZpZWxkVHlwZSI6InZhbHVlIiwidmFsdWUiOiIxNCJ9LHsiZmllbGROYW1lIjoiY2hldnJvbi1kZXB0aCIsImZpZWxkVHlwZSI6InZhbHVlIiwidmFsdWUiOiItMS4yIn0seyJmaWVsZE5hbWUiOiJjcm9zc292ZXJQb3NpdGlvbjEiLCJmaWVsZFR5cGUiOiJ2YWx1ZSIsInZhbHVlIjoiNzYuNjg3MzUwNTkyNTQzNiJ9LHsiZmllbGROYW1lIjoiY3Jvc3NvdmVyUG9zaXRpb24yIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6Ijc2LjY4NzM1MDU5MjU0MzYifSx7ImZpZWxkTmFtZSI6ImNyb3Nzb3ZlclBvc2l0aW9uMyIsImZpZWxkVHlwZSI6InZhbHVlIiwidmFsdWUiOiI3Ni42ODczNTA1OTI1NDM2In0seyJmaWVsZE5hbWUiOiJwb3NpdGlvbjEiLCJmaWVsZFR5cGUiOiJ2YWx1ZSIsInZhbHVlIjoiMC41Mzg1NTM0ODE1MTE2MjIifSx7ImZpZWxkTmFtZSI6InBvc2l0aW9uMiIsImZpZWxkVHlwZSI6InZhbHVlIiwidmFsdWUiOiIwLjUzODU1MzQ4MTUxMTYyMiJ9LHsiZmllbGROYW1lIjoicG9zaXRpb24zIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjAuNTM4NTUzNDgxNTExNjIyIn0seyJmaWVsZE5hbWUiOiJjcm9zc292ZXItZGVwdGgiLCJmaWVsZFR5cGUiOiJ2YWx1ZSIsInZhbHVlIjoiMC4wNzEifSx7ImZpZWxkTmFtZSI6InNob3VsZC13ZWF2ZSIsImZpZWxkVHlwZSI6ImNoZWNrIiwidmFsdWUiOnRydWV9LHsiZmllbGROYW1lIjoic3luYy1wb3NpdGlvbnMiLCJmaWVsZFR5cGUiOiJjaGVjayIsInZhbHVlIjp0cnVlfSx7ImZpZWxkTmFtZSI6InN5bmMtY3Jvc3NvdmVyLXBvc2l0aW9ucyIsImZpZWxkVHlwZSI6ImNoZWNrIiwidmFsdWUiOnRydWV9XQ'; loadFromURL();">Design 2</button>
+        <button onclick="window.location.hash = '#W3siZmllbGROYW1lIjoic3Ryb2tlLXdpZHRoIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjQ1In0seyJmaWVsZE5hbWUiOiJ0cmlhbmdsZS1zaXplIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjQyOCJ9LHsiZmllbGROYW1lIjoic3BhY2luZy1zaXplIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjE1NCJ9LHsiZmllbGROYW1lIjoiYmFja2luZy1zaXplIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjM1In0seyJmaWVsZE5hbWUiOiJjaGV2cm9uLXN0cm9rZSIsImZpZWxkVHlwZSI6InZhbHVlIiwidmFsdWUiOiIxNCJ9LHsiZmllbGROYW1lIjoiY2hldnJvbi1kZXB0aCIsImZpZWxkVHlwZSI6InZhbHVlIiwidmFsdWUiOiItMS4yIn0seyJmaWVsZE5hbWUiOiJjcm9zc292ZXJQb3NpdGlvbjEiLCJmaWVsZFR5cGUiOiJ2YWx1ZSIsInZhbHVlIjoiNzIuMzk5NjM1MDM2NDk2NCJ9LHsiZmllbGROYW1lIjoiY3Jvc3NvdmVyUG9zaXRpb24yIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjcyLjM5OTYzNTAzNjQ5NjQifSx7ImZpZWxkTmFtZSI6ImNyb3Nzb3ZlclBvc2l0aW9uMyIsImZpZWxkVHlwZSI6InZhbHVlIiwidmFsdWUiOiI3Mi4zOTk2MzUwMzY0OTY0In0seyJmaWVsZE5hbWUiOiJwb3NpdGlvbjEiLCJmaWVsZFR5cGUiOiJ2YWx1ZSIsInZhbHVlIjoiMC41Mzg1NTM0ODE1MTE2MjIifSx7ImZpZWxkTmFtZSI6InBvc2l0aW9uMiIsImZpZWxkVHlwZSI6InZhbHVlIiwidmFsdWUiOiIwLjUzODU1MzQ4MTUxMTYyMiJ9LHsiZmllbGROYW1lIjoicG9zaXRpb24zIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjAuNTM4NTUzNDgxNTExNjIyIn0seyJmaWVsZE5hbWUiOiJjcm9zc292ZXItZGVwdGgiLCJmaWVsZFR5cGUiOiJ2YWx1ZSIsInZhbHVlIjoiMC4wNzEifSx7ImZpZWxkTmFtZSI6InNob3VsZC13ZWF2ZSIsImZpZWxkVHlwZSI6ImNoZWNrIiwidmFsdWUiOnRydWV9LHsiZmllbGROYW1lIjoic3luYy1wb3NpdGlvbnMiLCJmaWVsZFR5cGUiOiJjaGVjayIsInZhbHVlIjp0cnVlfSx7ImZpZWxkTmFtZSI6InN5bmMtY3Jvc3NvdmVyLXBvc2l0aW9ucyIsImZpZWxkVHlwZSI6ImNoZWNrIiwidmFsdWUiOnRydWV9XQ'; loadFromURL();">Design 3</button>
+        <button onclick="window.location.hash = '#W3siZmllbGROYW1lIjoic3Ryb2tlLXdpZHRoIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjE2In0seyJmaWVsZE5hbWUiOiJ0cmlhbmdsZS1zaXplIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjQyOCJ9LHsiZmllbGROYW1lIjoic3BhY2luZy1zaXplIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjE1NCJ9LHsiZmllbGROYW1lIjoiYmFja2luZy1zaXplIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjM1In0seyJmaWVsZE5hbWUiOiJjaGV2cm9uLXN0cm9rZSIsImZpZWxkVHlwZSI6InZhbHVlIiwidmFsdWUiOiI2In0seyJmaWVsZE5hbWUiOiJjaGV2cm9uLWRlcHRoIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6Ii0wLjUifSx7ImZpZWxkTmFtZSI6ImNyb3Nzb3ZlclBvc2l0aW9uMSIsImZpZWxkVHlwZSI6InZhbHVlIiwidmFsdWUiOiI2Ny43MDY0MzI0ODE3NTE4In0seyJmaWVsZE5hbWUiOiJjcm9zc292ZXJQb3NpdGlvbjIiLCJmaWVsZFR5cGUiOiJ2YWx1ZSIsInZhbHVlIjoiNjcuNzA2NDMyNDgxNzUxOCJ9LHsiZmllbGROYW1lIjoiY3Jvc3NvdmVyUG9zaXRpb24zIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjY3LjcwNjQzMjQ4MTc1MTgifSx7ImZpZWxkTmFtZSI6InBvc2l0aW9uMSIsImZpZWxkVHlwZSI6InZhbHVlIiwidmFsdWUiOiIwLjQ5NjU3ODQ2NzE1MzI4NSJ9LHsiZmllbGROYW1lIjoicG9zaXRpb24yIiwiZmllbGRUeXBlIjoidmFsdWUiLCJ2YWx1ZSI6IjAuNDk2NTc4NDY3MTUzMjg1In0seyJmaWVsZE5hbWUiOiJwb3NpdGlvbjMiLCJmaWVsZFR5cGUiOiJ2YWx1ZSIsInZhbHVlIjoiMC40OTY1Nzg0NjcxNTMyODUifSx7ImZpZWxkTmFtZSI6ImNyb3Nzb3Zlci1kZXB0aCIsImZpZWxkVHlwZSI6InZhbHVlIiwidmFsdWUiOiIwLjA3MSJ9LHsiZmllbGROYW1lIjoic2hvdWxkLXdlYXZlIiwiZmllbGRUeXBlIjoiY2hlY2siLCJ2YWx1ZSI6dHJ1ZX0seyJmaWVsZE5hbWUiOiJzeW5jLXBvc2l0aW9ucyIsImZpZWxkVHlwZSI6ImNoZWNrIiwidmFsdWUiOnRydWV9LHsiZmllbGROYW1lIjoic3luYy1jcm9zc292ZXItcG9zaXRpb25zIiwiZmllbGRUeXBlIjoiY2hlY2siLCJ2YWx1ZSI6dHJ1ZX1d'; loadFromURL();">Design 4</button>
+        <div class="controls">
+            <h2>Triangle Controls</h2>
+            <div class="slider-container">
+                <label for="stroke-width">Stroke Width:</label>
+                <input type="range" id="stroke-width" min="1" max="100" value="41">
+                <span id="stroke-width-value">41</span>
+            </div>
+            <div class="slider-container">
+                <label for="triangle-size">Triangle Size:</label>
+                <input type="range" id="triangle-size" min="100" max="600" value="428">
+                <span id="size-value">428</span>
+            </div>
+            <div class="slider-container">
+                <label for="spacing-size">Triangle Spacing:</label>
+                <input type="range" id="spacing-size" min="0" max="200" value="117">
+                <span id="spacing-value">117</span>
+            </div>
+            <div class="slider-container">
+                <label for="backing-size">Backing Spacing:</label>
+                <input type="range" id="backing-size" min="0" max="50" value="35">
+                <span id="backing-value">35</span>
+            </div>
+            <div class="weave-option">
+                <input type="checkbox" id="should-weave" checked>
+                <label for="should-weave">Overlay weave correction</label>
+            </div>
+        </div>
+
+        <div class="chevron-controls">
+            <h2>Chevron Controls</h2>
+            <div class="slider-container">
+                <label for="chevron-stroke">Chevron Stroke:</label>
+                <input type="range" id="chevron-stroke" min="1" max="25" value="14">
+                <span id="chevron-stroke-value">14</span>
+            </div>
+            <div class="slider-container">
+                <label for="chevron-depth">Chevron Depth:</label>
+                <input type="range" id="chevron-depth" min="-3" max="3" value="-1.2" step=".1">
+                <span id="chevron-depth-value">-1.2</span>
+            </div>
+            
+            <div class="sync-option">
+                <input type="checkbox" id="sync-positions" checked>
+                <label for="sync-positions">Sync chevron positions</label>
+            </div>
+
+            <div class="leg-controls">
+                <label>Chevron 1 Leg Selection & Position:</label>
+                <div class="leg-group">
+                    <label class="leg-option">
+                        <input type="radio" name="triangle1-leg" value="0">
+                        Leg 1
+                    </label>
+                    <label class="leg-option">
+                        <input type="radio" name="triangle1-leg" value="1" checked>
+                        Leg 2
+                    </label>
+                    <label class="leg-option">
+                        <input type="radio" name="triangle1-leg" value="2">
+                        Leg 3
+                    </label>
+                </div>
+                <div class="slider-container">
+                    <label for="position1">Position:</label>
+                    <input type="range" id="position1" min="0" max="1" value="0.65" step="any">
+                    <span id="position1-value">0.65</span>
+                </div>
+            </div>
+
+            <div class="leg-controls">
+                <label>Chevron 2 Leg Selection & Position:</label>
+                <div class="leg-group">
+                    <label class="leg-option">
+                        <input type="radio" name="triangle2-leg" value="0" checked>
+                        Leg 1
+                    </label>
+                    <label class="leg-option">
+                        <input type="radio" name="triangle2-leg" value="1">
+                        Leg 2
+                    </label>
+                    <label class="leg-option">
+                        <input type="radio" name="triangle2-leg" value="2">
+                        Leg 3
+                    </label>
+                </div>
+                <div class="slider-container">
+                    <label for="position2">Position:</label>
+                    <input type="range" id="position2" min="0" max="1" value="0.65" step="any">
+                    <span id="position2-value">0.65</span>
+                </div>
+            </div>
+
+            <div class="leg-controls">
+                <label>Chevron 3 Leg Selection & Position:</label>
+                <div class="leg-group">
+                    <label class="leg-option">
+                        <input type="radio" name="triangle3-leg" value="0">
+                        Leg 1
+                    </label>
+                    <label class="leg-option">
+                        <input type="radio" name="triangle3-leg" value="1">
+                        Leg 2
+                    </label>
+                    <label class="leg-option">
+                        <input type="radio" name="triangle3-leg" value="2" checked>
+                        Leg 3
+                    </label>
+                </div>
+                <div class="slider-container">
+                    <label for="position3">Position:</label>
+                    <input type="range" id="position3" min="0" max="1" value="0.65" step="any">
+                    <span id="position3-value">0.65</span>
+                </div>
+            </div>
+        </div>
+        <div class="crossover-controls">
+            <h2>Crossover Controls</h2>
+            <div class="slider-container">
+                <label for="crossover-depth">Crossover Depth:</label>
+                <input type="range" id="crossover-depth" min="0" max="1" value=".071" step="any">
+                <span id="crossover-depth-value">.071</span>
+            </div>
+            
+            <div class="sync-option">
+                <input type="checkbox" id="sync-crossover-positions" checked>
+                <label for="sync-crossover-positions">Sync crossover positions</label>
+            </div>
+                <div class="leg-controls">
+                    <label>Crossover 1 Leg Selection & Position:</label>
+                    <div class="leg-group">
+                        <label class="leg-option">
+                            <input type="radio" name="crossoverTriangle1-leg" value="0">
+                            Leg 1
+                        </label>
+                        <label class="leg-option">
+                            <input type="radio" name="crossoverTriangle1-leg" value="1">
+                            Leg 2
+                        </label>
+                        <label class="leg-option">
+                            <input type="radio" name="crossoverTriangle1-leg" value="2" checked>
+                            Leg 3
+                        </label>
+                    </div>
+                    <div class="slider-container">
+                        <label for="crossoverPosition1">Position:</label>
+                        <input type="range" id="crossoverPosition1" min="0" max="100" value="79.76" step="any">
+                        <span id="crossoverPosition1-value">79.76</span>
+                    </div>
+                </div>
+    
+                <div class="leg-controls">
+                    <label>Crossover 2 Leg Selection & Position:</label>
+                    <div class="leg-group">
+                        <label class="leg-option">
+                            <input type="radio" name="crossoverTriangle2-leg" value="0">
+                            Leg 1
+                        </label>
+                        <label class="leg-option">
+                            <input type="radio" name="crossoverTriangle2-leg" value="1" checked>
+                            Leg 2
+                        </label>
+                        <label class="leg-option">
+                            <input type="radio" name="crossoverTriangle2-leg" value="2">
+                            Leg 3
+                        </label>
+                    </div>
+                    <div class="slider-container">
+                        <label for="crossoverPosition2">Position:</label>
+                        <input type="range" id="crossoverPosition2" min="0" max="100" value="79.76" step="any">
+                        <span id="crossoverPosition2-value">79.76</span>
+                    </div>
+                </div>
+    
+                <div class="leg-controls">
+                    <label>Crossover 3 Leg Selection & Position:</label>
+                    <div class="leg-group">
+                        <label class="leg-option">
+                            <input type="radio" name="crossoverTriangle3-leg" value="0" checked>
+                            Leg 1
+                        </label>
+                        <label class="leg-option">
+                            <input type="radio" name="crossoverTriangle3-leg" value="1">
+                            Leg 2
+                        </label>
+                        <label class="leg-option">
+                            <input type="radio" name="crossoverTriangle3-leg" value="2">
+                            Leg 3
+                        </label>
+                    </div>
+                    <div class="slider-container">
+                        <label for="crossoverPosition3">Position:</label>
+                        <input type="range" id="crossoverPosition3" min="0" max="100" value="79.76" step="any">
+                        <span id="crossoverPosition3-value">79.76</span>
+                    </div>
+                </div>
+            </div>
+            <br>
+            <button id="downloadPNG">Download as PNG</button>
+            <br>
+            <button id="downloadSVG">Download as SVG</button>
+        </div>
+    </div>
+
+    <script>
+        function createEquilateralTrianglePath(centerCoordinates, size) {
+            const height = (Math.sqrt(3) / 2) * size;
+            const halfSize = size / 2;
+            
+            // Calculate vertices for downward-pointing triangle
+            const x1 = centerCoordinates[0] - halfSize;
+            const y1 = centerCoordinates[1] - height/2;
+            const x2 = centerCoordinates[0] + halfSize;
+            const y2 = centerCoordinates[1] - height/2;
+            const x3 = centerCoordinates[0];
+            const y3 = centerCoordinates[1] + height/2;
+            
+            return {
+                path: `M ${x1} ${y1} L ${x2} ${y2} L ${x3} ${y3} Z`,
+                vertices: [[x1, y1], [x2, y2], [x3, y3]]
+            };
+        }
+
+        function getSelectedChevronLeg(triangleIndex) {
+            return parseInt(document.querySelector(`input[name="triangle${triangleIndex + 1}-leg"]:checked`).value);
+        }
+
+        function getChevronPosition(triangleIndex) {
+            return parseFloat(document.getElementById(`position${triangleIndex + 1}`).value);
+        }
+
+        function getSelectedCrossoverLeg(triangleIndex) {
+            return parseInt(document.querySelector(`input[name="crossoverTriangle${triangleIndex + 1}-leg"]:checked`).value);
+        }
+
+        function getCrossoverPosition(triangleIndex) {
+            return parseFloat(document.getElementById(`crossoverPosition${triangleIndex + 1}`).value);
+        }
+
+        function createChevronPath(startPoint, endPoint, width, position) {
+            const dx = endPoint[0] - startPoint[0];
+            const dy = endPoint[1] - startPoint[1];
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const unitX = dx / length;
+            const unitY = dy / length;
+            
+            // Calculate chevron points
+            const chevronWidth = width * 1.5;  // Make chevron slightly wider than stroke
+            const depthMultiplier = Number(chevronDepthSlider.value);
+            const chevronDepth = width * depthMultiplier;    // Depth of chevron cut
+            
+            // Calculate middle point of the line
+            const midX = startPoint[0] + (endPoint[0] - startPoint[0]) * position;
+            const midY = startPoint[1] + (endPoint[1] - startPoint[1]) * position;
+            
+            // Calculate points for chevron that points along the line direction
+            const chevronPoint1X = midX + unitX * chevronDepth/2;
+            const chevronPoint1Y = midY + unitY * chevronDepth/2;
+            const chevronPoint2X = midX - unitX * chevronDepth/2;
+            const chevronPoint2Y = midY - unitY * chevronDepth/2;
+            
+            // Calculate the width points perpendicular to the line
+            const perpX = -unitY;  // Perpendicular vector
+            const perpY = unitX;
+            
+            // Create the four points of the chevron
+            const p1x = chevronPoint1X + perpX * chevronWidth/2;
+            const p1y = chevronPoint1Y + perpY * chevronWidth/2;
+            const p2x = chevronPoint1X - perpX * chevronWidth/2;
+            const p2y = chevronPoint1Y - perpY * chevronWidth/2;
+            const p3x = chevronPoint2X;
+            const p3y = chevronPoint2Y;
+            
+            return `M ${p1x} ${p1y} 
+                    L ${p3x} ${p3y} 
+                    L ${p2x} ${p2y}`;
+        }
+
+        function createCrossoverPath(startPoint, endPoint, width, position, depth) {
+            const dx = endPoint[0] - startPoint[0];
+            const dy = endPoint[1] - startPoint[1];
+
+            const angle = Math.atan2(dy, dx);
+            const perpAngle = angle + Math.PI/2;
+            
+            // Calculate center point using the position parameter (0-100%)
+            const centerX = startPoint[0] + Math.cos(perpAngle) * (-0.5 * width) + (dx * (position / 100));
+            const centerY = startPoint[1] +  Math.sin(perpAngle) * (-0.5* width) + (dy * (position / 100));
+            
+            // Calculate the angles for the three points of the triangle
+            // Rotate everything by 60 degrees (π/3 radians) from the perpendicular
+            const rotationAngle = Math.PI/3;  // 60 degrees
+            const point1Angle = angle - Math.PI/2 + rotationAngle;
+            const point2Angle = point1Angle + (2 * Math.PI/3);  // Add 120 degrees for equilateral triangle
+            const point3Angle = point2Angle + (2 * Math.PI/3);  // Add another 120 degrees
+            
+            // Calculate the three points of the triangle
+            const radius = width;  // Keep the size contained within the stroke width
+            const point1X = centerX + Math.cos(point1Angle) + (dx * depth);
+            const point1Y = centerY + Math.sin(point1Angle) + (dy * depth);
+            const point2X = centerX + Math.cos(point2Angle) * radius * .5;
+            const point2Y = centerY + Math.sin(point2Angle) * radius * .5;
+            const point3X = centerX + Math.cos(point3Angle) - (dx * depth);
+            const point3Y = centerY + Math.sin(point3Angle) - (dy * depth);
+            
+            // Create the triangular path
+            return `M ${point1X} ${point1Y} L ${point2X} ${point2Y} L ${point3X} ${point3Y} Z`;
+        }
+
+        function createOpposingCrossoverPath(startPoint, endPoint, width, position, depth) {
+            const dx = endPoint[0] - startPoint[0];
+            const dy = endPoint[1] - startPoint[1];
+
+            const angle = Math.atan2(dy, dx);
+            const perpAngle = angle + Math.PI/2;
+            
+            // Calculate center point using the position parameter (0-100%)
+            const centerX = startPoint[0] + Math.cos(perpAngle) * (width * .5) + (dx * (position / 100));
+            const centerY = startPoint[1] + Math.sin(perpAngle) * (width * .5) + (dy * (position / 100));
+            
+            // Calculate the angles for the three points of the triangle
+            // Rotate everything by 60 degrees (π/3 radians) from the perpendicular
+            const rotationAngle = 0;  // 60 degrees
+            const point1Angle = angle - Math.PI/2 + rotationAngle;
+            const point2Angle = point1Angle + (2 * Math.PI/3);  // Add 120 degrees for equilateral triangle
+            const point3Angle = point2Angle + (2 * Math.PI/3);  // Add another 120 degrees
+            
+            // Calculate the three points of the triangle
+            const radius = width;  // Keep the size contained within the stroke width
+            const point1X = centerX + Math.cos(point1Angle) * radius * .5;
+            const point1Y = centerY + Math.sin(point1Angle) * radius * .5;
+            const point2X = centerX + Math.cos(point2Angle) + (dx * depth);
+            const point2Y = centerY + Math.sin(point2Angle) + (dy * depth);
+            const point3X = centerX + Math.cos(point3Angle) - (dx * depth);
+            const point3Y = centerY + Math.sin(point3Angle) - (dy * depth);
+        
+            // Create the triangular path
+            return `M ${point1X} ${point1Y} L ${point2X} ${point2Y} L ${point3X} ${point3Y} Z`;
+        }
+
+        function saveToURL() {
+            const fields = {
+                'stroke-width': 'value',
+                'triangle-size': 'value',
+                'spacing-size': 'value',
+                'backing-size': 'value',
+                'chevron-stroke': 'value',
+                'chevron-depth': 'value',
+                'crossoverPosition1': 'value',
+                'crossoverPosition2': 'value',
+                'crossoverPosition3': 'value',
+                'position1': 'value',
+                'position2': 'value',
+                'position3': 'value',
+                'crossover-depth': 'value',
+                'should-weave': 'check',
+                'sync-positions': 'check',
+                'sync-crossover-positions': 'check'
+            }
+
+            const savedData = [];
+            for (field of Object.keys(fields)) {
+                let value;
+                if (fields[field] === 'value') {
+                   value = document.getElementById(field).value;
+                } else {
+                    // checkbox
+                    value = document.getElementById(field).checked;
+                }
+                savedData.push({fieldName: field, fieldType: fields[field], value: value})
+            }
+
+            history.pushState(null, null, '#' + btoa(JSON.stringify(savedData)));
+        }
+        
+        function downloadSVG(svgElementId, filename) {
+            // Get the SVG element
+            const svgElement = document.getElementById(svgElementId);
+            if (!svgElement) {
+                throw new Error(`No SVG element found with ID: ${svgElementId}`);
+            }
+
+            // Clone the SVG to avoid modifying the original
+            const svgClone = svgElement.cloneNode(true);
+            
+            // Ensure proper XML namespaces are set
+            svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            svgClone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+            
+            // Get the SVG as a string
+            const svgData = new XMLSerializer().serializeToString(svgClone);
+            
+            // Create a Blob with the SVG data
+            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            
+            // Create the download URL
+            const url = URL.createObjectURL(svgBlob);
+            
+            // Create a temporary link element
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = filename.endsWith('.svg') ? filename : `${filename}.svg`;
+            
+            // Append link to body (required for Firefox)
+            document.body.appendChild(downloadLink);
+            
+            // Trigger the download
+            downloadLink.click();
+            
+            // Clean up
+            document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadSVGAsPNG(svgId, filename) {
+            // Get the SVG element
+            const svgElement = document.getElementById(svgId);
+            if (!svgElement) {
+                console.error(`SVG element with id "${svgId}" not found`);
+                return;
+            }
+
+            // Get the SVG dimensions
+            const svgRect = svgElement.getBoundingClientRect();
+            const width = svgRect.width;
+            const height = svgRect.height;
+
+            // Create a canvas element
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+
+            // Create a Blob from the SVG
+            const svgData = new XMLSerializer().serializeToString(svgElement);
+            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(svgBlob);
+
+            // Create an image from the SVG
+            const img = new Image();
+            img.onload = () => {
+                // Draw the image on the canvas
+                ctx.drawImage(img, 0, 0);
+                
+                // Convert canvas to blob
+                canvas.toBlob((blob) => {
+                    // Create download link
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = URL.createObjectURL(blob);
+                    downloadLink.download = filename || 'download.png';
+                    
+                    // Trigger download
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                    
+                    // Clean up
+                    URL.revokeObjectURL(downloadLink.href);
+                    URL.revokeObjectURL(url);
+                }, 'image/png');
+            };
+
+            // Set image source to SVG URL
+            img.src = url;
+        }
+
+        function loadFromURL() {
+            const data = window.location.hash.slice(1);
+            if (data) {
+                for (inputValue of JSON.parse(atob(data))) {
+                    if (inputValue.fieldType === 'value') {
+                        document.getElementById(inputValue.fieldName).value = inputValue.value;
+                    } else {
+                        document.getElementById(inputValue.fieldName).checked = inputValue.value;  
+                    }
+                }
+                updateTriangles();
+            } else {
+                console.log('no data to load')
+            }
+        }
+
+        // Get elements
+        // shapes
+        const triangle1 = document.getElementById('triangle1');
+        const triangle2 = document.getElementById('triangle2');
+        const triangle3 = document.getElementById('triangle3');
+
+        const triangle1backing = document.getElementById('triangle1backing');
+        const triangle2backing = document.getElementById('triangle2backing');
+        const triangle3backing = document.getElementById('triangle3backing');
+
+        const chevron1 = document.getElementById('chevron1');
+        const chevron2 = document.getElementById('chevron2');
+        const chevron3 = document.getElementById('chevron3');
+
+        const crossover1 = document.getElementById('crossover1');
+        const crossover2 = document.getElementById('crossover2');
+        const crossover3 = document.getElementById('crossover3');
+
+        // UI
+        const strokeWidthSlider = document.getElementById('stroke-width');
+        const strokeWidthValue = document.getElementById('stroke-width-value');
+
+        const triangleSizeSlider = document.getElementById('triangle-size');
+        const sizeValue = document.getElementById('size-value');
+
+        const spacingSlider = document.getElementById('spacing-size');
+        const spacingValue = document.getElementById('spacing-value');
+
+        const backingSlider = document.getElementById('backing-size');
+        const backingValue = document.getElementById('backing-value');
+
+        const chevronStrokeSlider = document.getElementById('chevron-stroke');
+        const chevronStrokeValue = document.getElementById('chevron-stroke-value');
+        const chevronDepthSlider = document.getElementById('chevron-depth');
+        const chevronDepthValue = document.getElementById('chevron-depth-value');
+
+        const crossoverDepthSlider = document.getElementById('crossover-depth');
+        const crossoverDepthValue = document.getElementById('crossover-depth-value');
+
+        const shouldWeaveCheckbox = document.getElementById('should-weave');
+
+        // Function to update triangle paths and chevrons
+        function updateTriangles() {
+            saveToURL();
+            const centroid = [400, 400];
+            const size = Number(triangleSizeSlider.value);
+            const spacing = Number(spacingSlider.value);
+            const width = Number(strokeWidthSlider.value);
+
+            const backing = Number(backingSlider.value);
+
+            const chevronStroke = Number(chevronStrokeSlider.value);
+            const chevronDepth = Number(chevronDepthSlider.value);
+
+            const crossoverDepth = Number(crossoverDepthSlider.value);
+
+            const shouldWeave = shouldWeaveCheckbox.checked;
+
+            strokeWidthValue.textContent = width;
+            backingValue.textContent = backing;
+            sizeValue.textContent = size;
+            spacingValue.textContent = spacing;
+
+            chevronStrokeValue.textContent = chevronStroke;
+            chevronDepthValue.textContent = chevronDepth;
+
+            crossoverDepthValue.textContent = crossoverDepth;
+
+            // update triangle stroke width
+            [triangle1, triangle2, triangle3, triangleWeaveTopMask].forEach(triangle => {
+                triangle.setAttribute('stroke-width', width);
+            });
+
+            // update backing stroke width
+            [triangle1backing, triangle2backing, triangle3backing, triangleWeaveBackingMask].forEach(triangle => {
+                triangle.setAttribute('stroke-width', width + Number(backingSlider.value));
+            });
+
+            // update chevron stroke width
+            [chevron1, chevron2, chevron3].forEach(chevron => {
+                chevron.setAttribute('stroke-width', chevronStroke);
+            });
+
+            // Update triangles and their chevrons
+            const positions = [
+                [centroid[0], centroid[1] + spacing],
+                centroid,
+                [centroid[0] - (spacing * (Math.sqrt(3) / 2)), centroid[1] + (spacing / 2)]
+            ];
+
+            [triangle1backing, triangle2backing, triangle3backing].forEach((tirangleBacking, i) => {
+                const triangleData = createEquilateralTrianglePath(positions[i], size);
+                tirangleBacking.setAttribute('d', triangleData.path);
+
+                if (i === 1) {
+                    // only retain the necessary data so we don't cause mask errors elsewhere
+                    const choppedPathData =  triangleData.path.split('L')[0] + triangleData.path.split('L')[2].slice(0, -1)
+                    document.getElementById('triangleWeaveBackingMask').setAttribute('d', shouldWeave ? choppedPathData: '');
+                }
+            });
+
+            [triangle1, triangle2, triangle3].forEach((triangle, i) => {
+                const triangleData = createEquilateralTrianglePath(positions[i], size);
+                triangle.setAttribute('d', triangleData.path);
+
+                if (i === 1) {
+                    // only retain the necessary data so we don't cause mask errors elsewhere
+                    const choppedPathData =  triangleData.path.split('L')[0] + triangleData.path.split('L')[2].slice(0, -1)
+                    document.getElementById('triangleWeaveTopMask').setAttribute('d', shouldWeave ? choppedPathData : '');
+                }
+                
+                // Create chevron on the selected leg of each triangle
+                const chevron = document.getElementById(`chevron${i + 1}`);
+                const vertices = triangleData.vertices;
+                const selectedLeg = getSelectedChevronLeg(i);
+                const position = getChevronPosition(i);
+                const startVertex = vertices[selectedLeg];
+                const endVertex = vertices[(selectedLeg + 1) % 3];
+                const chevronPath = createChevronPath(startVertex, endVertex, width, position);
+                chevron.setAttribute('d', chevronPath);
+
+                // Create crossover on the selected leg of each triangle
+                const crossover = document.getElementById(`crossover${i + 1}`);
+                const crossoverVertices = triangleData.vertices;
+                const selectedCrossoverLeg = getSelectedCrossoverLeg(i);
+                const crossoverPosition = getCrossoverPosition(i);
+                const startCrossVertex = crossoverVertices[selectedCrossoverLeg];
+                const endCrossVertex = crossoverVertices[(selectedCrossoverLeg + 1) % 3];
+                const crossoverPath = createCrossoverPath(startCrossVertex, endCrossVertex, width, crossoverPosition, crossoverDepth);
+                crossover.setAttribute('d', crossoverPath);
+
+                const crossoverOpposing = document.getElementById(`crossover${i + 1}opposing`);
+                const opposingCrossoverPath = createOpposingCrossoverPath(startCrossVertex, endCrossVertex, width, crossoverPosition, crossoverDepth);
+                crossoverOpposing.setAttribute('d', opposingCrossoverPath);
+            });
+
+            //saveToURL();
+        }
+
+        // Set up listeners to update triangle
+        strokeWidthSlider.addEventListener('input', updateTriangles);
+        backingSlider.addEventListener('input', updateTriangles);
+        triangleSizeSlider.addEventListener('input', updateTriangles);
+        spacingSlider.addEventListener('input', updateTriangles);
+
+        chevronStrokeSlider.addEventListener('input', updateTriangles);
+        chevronDepthSlider.addEventListener('input', updateTriangles);
+
+        crossoverDepthSlider.addEventListener('input', updateTriangles);
+
+        shouldWeaveCheckbox.addEventListener('change', updateTriangles);
+
+        document.getElementById('downloadPNG').addEventListener('click', () => {downloadSVGAsPNG('canvas',  window.location.hash.slice(1))});
+        document.getElementById('downloadSVG').addEventListener('click', () => {downloadSVG('canvas',  window.location.hash.slice(1))});
+
+
+        // Set up radio button controls
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', updateTriangles);
+        });
+
+        // Set up chevron sliders
+        for (let i = 1; i <= 3; i++) {
+            const slider = document.getElementById(`position${i}`);
+            const value = document.getElementById(`position${i}-value`);
+            slider.addEventListener('input', function() {
+                const newPosition = this.value;
+                value.textContent = Number(newPosition).toFixed(2);
+                
+                // If sync is enabled, update all position sliders
+                if (document.getElementById('sync-positions').checked) {
+                    for (let j = 1; j <= 3; j++) {
+                        if (j !== i) {  // Skip the current slider
+                            const otherSlider = document.getElementById(`position${j}`);
+                            const otherValue = document.getElementById(`position${j}-value`);
+                            otherSlider.value = newPosition;
+                            otherValue.textContent = Number(newPosition).toFixed(2);
+                        }
+                    }
+                }
+                
+                updateTriangles();
+            });
+        }
+
+        // set up crossover sliders
+        for (let i = 1; i <= 3; i++) {
+            const slider = document.getElementById(`crossoverPosition${i}`);
+            const value = document.getElementById(`crossoverPosition${i}-value`);
+            slider.addEventListener('input', function() {
+                const newPosition = this.value;
+                value.textContent = Number(newPosition).toFixed(2);
+                
+                // If sync is enabled, update all position sliders
+                if (document.getElementById('sync-crossover-positions').checked) {
+                    for (let j = 1; j <= 3; j++) {
+                        if (j !== i) {  // Skip the current slider
+                            const otherSlider = document.getElementById(`crossoverPosition${j}`);
+                            const otherValue = document.getElementById(`crossoverPosition${j}-value`);
+                            otherSlider.value = newPosition;
+                            otherValue.textContent = Number(newPosition).toFixed(2);
+                        }
+                    }
+                }
+                
+                updateTriangles();
+            });
+        }
+
+
+        loadFromURL();
+        updateTriangles();
+    </script>
+</body>
+</html>
