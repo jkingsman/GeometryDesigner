@@ -11,7 +11,7 @@
             background: #fafafa;
             display: flex;
             gap: 2rem;
-            min-height: 100vh;
+            max-width: 1920px;
         }
 
         #canvas {
@@ -24,9 +24,11 @@
         .controls-wrapper {
             flex: 1;
             display: flex;
-            flex-direction: column;
+            flex-wrap: wrap;
             gap: 1rem;
         }
+
+
 
         .controls, .chevron-controls, .crossover-controls {
             background: white;
@@ -90,6 +92,7 @@
             
             #canvas {
                 width: 100%;
+                max-height: 50vh;
                 position: sticky;
             }
         }
@@ -97,12 +100,23 @@
         @media (min-width: 768px) {
             #canvas {
                 max-width: 40vw;
-                max-height: 40vw;
+                max-height: min(40vw, 50vh);
+            }
+        }
+
+        @media (min-width: 1300px) {
+            .controls-wrapper > div {
+                flex: 1 1 40%;
+            }
+        }
+
+        @media (max-width: 1300px) {
+            .controls-wrapper > div {
+                width: 100%;
             }
         }
 
         .design-options {
-            width: 300px;
             margin: 3px;
         }
     </style>
@@ -170,6 +184,20 @@
                 <input type="checkbox" id="should-weave" checked>
                 Overlay weave correction
             </label>
+        </div>
+
+        <div class="controls">
+            <h2>Global Offsets</h2>
+            <div class="slider-container">
+                <label for="x-offset">X Offset</label>
+                <input type="range" id="x-offset" min="-200" max="200" value="0">
+                <span id="x-offset-value">0</span>
+            </div>
+            <div class="slider-container">
+                <label for="y-offset">Y Offset</label>
+                <input type="range" id="y-offset" min="-200" max="200" value="0">
+                <span id="y-offset-value">0</span>
+            </div>
         </div>
 
         <div class="chevron-controls">
@@ -353,33 +381,18 @@
             </div>
         </div>
 
-        <div class="controls">
-            <h2>Global Offsets</h2>
-            <div class="slider-container">
-                <label for="x-offset">X Offset</label>
-                <input type="range" id="x-offset" min="-200" max="200" value="0">
-                <span id="x-offset-value">0</span>
-            </div>
-            <div class="slider-container">
-                <label for="y-offset">Y Offset</label>
-                <input type="range" id="y-offset" min="-200" max="200" value="0">
-                <span id="y-offset-value">0</span>
-            </div>
-        </div>
-
         <div>
-            <button class="design-options" id="downloadPNG">Download as PNG</button>
+            <button class="design-options" id="downloadPNG">Download as PNG [descriptor name]</button>
             <button class="design-options" id="downloadPNGShort">Download as PNG [short name]</button>
             <br>
-            <button class="design-options" id="downloadSVG">Download as SVG</button>
+            <button class="design-options" id="downloadSVG">Download as SVG [descriptor name]</button>
             <button class="design-options" id="downloadSVGShort">Download as SVG [short name]</button>
             <br>
             <button class="design-options" id="saveToURL">Save to URL</button>
+            <button class="design-options" id="copyToClipboard">Copy descriptor to clipboard</button>
         </div>
 
-        <hr>
-        <div id="bookmarkedDesigns">
-         </div>
+        <div id="bookmarkedDesigns"></div>
     </div>
     <script>
         function createEquilateralTrianglePath(centerCoordinates, size) {
@@ -895,11 +908,12 @@
         offsetX.addEventListener('input', updateTriangles);
         offsetY.addEventListener('input', updateTriangles);
 
-        document.getElementById('downloadPNG').addEventListener('click', () => {saveToURL(); downloadSVGAsPNG('canvas', window.location.hash.slice(1))});
-        document.getElementById('downloadPNGShort').addEventListener('click', () => {saveToURL(); downloadSVGAsPNG('canvas', `design_${Date.now()}.png`)});
-        document.getElementById('downloadSVG').addEventListener('click', () => {saveToURL(); downloadSVG('canvas', window.location.hash.slice(1))});
-        document.getElementById('downloadSVGShort').addEventListener('click', () => {saveToURL(); downloadSVG('canvas', `design_${Date.now()}.svg`)});
+        document.getElementById('downloadPNG').addEventListener('click', () => {saveToURL(); downloadSVGAsPNG('canvas', window.location.hash.slice(1)); history.replaceState(null, null, window.location.pathname + window.location.search)});
+        document.getElementById('downloadPNGShort').addEventListener('click', () => {saveToURL(); downloadSVGAsPNG('canvas', `design_${Date.now()}.png`); history.replaceState(null, null, window.location.pathname + window.location.search)});
+        document.getElementById('downloadSVG').addEventListener('click', () => {saveToURL(); downloadSVG('canvas', window.location.hash.slice(1)); history.replaceState(null, null, window.location.pathname + window.location.search)});
+        document.getElementById('downloadSVGShort').addEventListener('click', () => {saveToURL(); downloadSVG('canvas', `design_${Date.now()}.svg`); history.replaceState(null, null, window.location.pathname + window.location.search)});
         document.getElementById('saveToURL').addEventListener('click', saveToURL);
+        document.getElementById('copyToClipboard').addEventListener('click', () => {saveToURL(); navigator.clipboard.writeText(window.location.hash.slice(1)); history.replaceState(null, null, window.location.pathname + window.location.search)});
 
 
         // Set up radio button controls
