@@ -851,9 +851,12 @@
             });
 
             // update backing stroke width
-            [triangle1backing, triangle2backing, triangle3backing, triangleWeaveBackingMask].forEach(triangle => {
+            [triangle1backing, triangle2backing, triangle3backing].forEach(triangle => {
                 triangle.setAttribute('stroke-width', width + Number(backingSlider.value));
             });
+
+            // need correcting value for crisp edges
+            triangleWeaveBackingMask.setAttribute('stroke-width', width + Number(backingSlider.value) - 0.8);
 
             // update chevron stroke width
             [chevron1, chevron2, chevron3].forEach(chevron => {
