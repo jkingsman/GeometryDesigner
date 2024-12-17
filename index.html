@@ -215,7 +215,11 @@
 
             <div class="slider-container">
                 <label>Chevron Angle</label>
-                <span><span id="chevron-angle-value">-1.2</span>&deg;</span>
+                <span><span id="chevron-angle-value">-1.2</span>&deg;
+                <button onclick="targetSliderForResult('chevron-depth', 'chevron-angle-value', 30);">30&deg;</button>
+                <button onclick="targetSliderForResult('chevron-depth', 'chevron-angle-value', 60);">60&deg;</button>
+                <button onclick="targetSliderForResult('chevron-depth', 'chevron-angle-value', 90);">90&deg;</button>
+                <button onclick="targetSliderForResult('chevron-depth', 'chevron-angle-value', 120);">120&deg;</button></span>
             </div>
             
             <label>
@@ -303,7 +307,12 @@
 
             <div class="slider-container">
                 <label>Crossover Angle</label>
-                <span><span id="crossover-angle-value">-1.2</span>&deg;</span>
+                <span><span id="crossover-angle-value">-1.2</span>&deg;
+                <button onclick="targetSliderForResult('crossover-depth', 'crossover-angle-value', 30, true);">30&deg;</button>
+                <button onclick="targetSliderForResult('crossover-depth', 'crossover-angle-value', 60, true);">60&deg;</button>
+                <button onclick="targetSliderForResult('crossover-depth', 'crossover-angle-value', 90, true);">90&deg;</button>
+                <button onclick="targetSliderForResult('crossover-depth', 'crossover-angle-value', 120, true);">120&deg;</button></span>
+            </span>
             </div>
             
             <label>
@@ -466,7 +475,7 @@
             const p3x = chevronPoint2X;
             const p3y = chevronPoint2Y;
 
-            document.getElementById('chevron-angle-value').innerText = calculateAngle([[p1x, p1y], [p2x, p2y], [p3x, p3y]])[2]
+            document.getElementById('chevron-angle-value').innerText = calculateAngle([[p1x, p1y], [p2x, p2y], [p3x, p3y]])[2].toFixed(2);
             
             return `M ${p1x} ${p1y} 
                     L ${p3x} ${p3y} 
@@ -500,7 +509,7 @@
             const point3X = centerX + Math.cos(point3Angle) - (dx * depth);
             const point3Y = centerY + Math.sin(point3Angle) - (dy * depth);
             
-            document.getElementById('crossover-angle-value').innerText = 180 - calculateAngle([[point1X, point1Y], [point2X, point2Y], [point3X, point3Y]])[1]
+            document.getElementById('crossover-angle-value').innerText = (180 - calculateAngle([[point1X, point1Y], [point2X, point2Y], [point3X, point3Y]])[1]).toFixed(2);
 
             // Create the triangular path
             return `M ${point1X} ${point1Y} L ${point2X} ${point2Y} L ${point3X} ${point3Y} Z`;
@@ -694,8 +703,6 @@
                     }
                 }
                 updateTriangles();
-            } else {
-                console.log('no data to load')
             }
         }
 
@@ -723,7 +730,7 @@
             
             // Check if points form a valid triangle
             if (a + b <= c || b + c <= a || a + c <= b) {
-                throw new Error('Invalid points: These points do not form a valid triangle');
+                return [180, 180, 180];
             }
 
             // Calculate angles using law of cosines
@@ -986,6 +993,36 @@
 
             for (bookmark in bookmarks) {
                 document.getElementById('bookmarkedDesigns').innerHTML += `<button class="design-options" onclick="window.location.hash = '#${bookmarks[bookmark]}'; loadFromURL();">${bookmark}</button>`
+            }
+        }
+
+        function targetSliderForResult(changableDiv, outputDiv, target, invert=false) {
+            let upperBound = Number(document.getElementById(changableDiv).max);
+            let lowerBound = Number(document.getElementById(changableDiv).min);
+            let output = document.getElementById(outputDiv);
+
+            for (i = 0; i <= 10; i++) {
+                let midpoint = (upperBound + lowerBound) / 2;
+
+                document.getElementById(changableDiv).value = midpoint;
+                updateTriangles();
+                if (Number(output.innerText) == target) {
+                    break;
+                }
+
+                if (Number(output.innerText) > target) {
+                    if (invert) {
+                        lowerBound = midpoint;
+                    } else {
+                        upperBound = midpoint;
+                    }
+                } else {
+                    if (invert) {
+                        upperBound = midpoint;
+                    } else {
+                        lowerBound = midpoint;
+                    }
+                }
             }
         }
 
