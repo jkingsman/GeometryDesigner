@@ -97,7 +97,7 @@
             .controls, .chevron-controls, .crossover-controls {
                 padding: 0.2rem;
             }
-            
+
             #canvas {
                 width: 100%;
                 max-height: 50vh;
@@ -133,26 +133,25 @@
     <svg id="canvas" viewBox="0 0 800 800">
         <defs>
             <mask id="mask1" maskUnits="userSpaceOnUse"> <!-- must account for big strokes -->
-            <rect width="100%" height="100%" fill="white"/>
-            <path id="chevron1" fill="none" stroke="black" stroke-width="1"/>
-            <path id="crossover1" fill="black" stroke="none" stroke-width="1"/>
-            <path id="crossover1opposing" fill="black" stroke="none" stroke-width="1"/>
-
-        </mask>
-        <mask id="mask2" maskUnits="userSpaceOnUse">
-            <rect width="100%" height="100%" fill="white"/>
-            <path id="chevron2" fill="none" stroke="black" stroke-width="1"/>
-            <path id="crossover2" fill="black" stroke="none" stroke-width="1"/>
-            <path id="crossover2opposing" fill="black" stroke="none" stroke-width="1"/>
-        </mask>
-        <mask id="mask3" maskUnits="userSpaceOnUse">
-            <rect width="100%" height="100%" fill="white"/>
-            <path id="chevron3" fill="none" stroke="black" stroke-width="1"/>
-            <path id="crossover3" fill="black" stroke="none" stroke-width="1"/>
-            <path id="crossover3opposing" fill="black" stroke="none" stroke-width="1"/>
-            <path id="triangleWeaveBackingMask" fill="none" stroke="black" />
-            <path id="triangleWeaveTopMask" fill="none" stroke="black" />
-        </mask>
+                <rect width="100%" height="100%" fill="white"/>
+                <path id="chevron1" fill="none" stroke="black" stroke-width="1"/>
+                <path id="crossover1" fill="black" stroke="none" stroke-width="1"/>
+                <path id="crossover1opposing" fill="black" stroke="none" stroke-width="1"/>
+            </mask>
+            <mask id="mask2" maskUnits="userSpaceOnUse">
+                <rect width="100%" height="100%" fill="white"/>
+                <path id="chevron2" fill="none" stroke="black" stroke-width="1"/>
+                <path id="crossover2" fill="black" stroke="none" stroke-width="1"/>
+                <path id="crossover2opposing" fill="black" stroke="none" stroke-width="1"/>
+            </mask>
+            <mask id="mask3" maskUnits="userSpaceOnUse">
+                <rect width="100%" height="100%" fill="white"/>
+                <path id="chevron3" fill="none" stroke="black" stroke-width="1"/>
+                <path id="crossover3" fill="black" stroke="none" stroke-width="1"/>
+                <path id="crossover3opposing" fill="black" stroke="none" stroke-width="1"/>
+                <path id="triangleWeaveBackingMask" fill="none" stroke="black" />
+                <path id="triangleWeaveTopMask" fill="none" stroke="black" />
+            </mask>
         </defs>
 
         <path id="triangle2backing" fill="none" stroke="white"/>
@@ -160,11 +159,11 @@
 
         <path id="triangle1backing" fill="none" stroke="white"/>
         <path id="triangle1" fill="none" stroke="black" mask="url(#mask1)"/>
-        
+
         <path id="triangle3backing" fill="none" stroke="white" mask="url(#mask3)"/>
         <path id="triangle3" fill="none" stroke="black" mask="url(#mask3)"/>
     </svg>
-    
+
     <div class="controls-wrapper">
         <div class="controls">
             <h2>Triangle Controls</h2>
@@ -217,7 +216,7 @@
             </div>
             <div class="slider-container">
                 <label for="chevron-depth">Chevron Depth</label>
-                <input type="range" id="chevron-depth" min="-3" max="3" value="-1.2" step=".01">
+                <input type="range" id="chevron-depth" min="-3" max="3" value="-1.2" step=".001">
                 <span id="chevron-depth-value">-1.2</span>
             </div>
 
@@ -229,7 +228,7 @@
                 <button onclick="targetSliderForResult('chevron-depth', 'chevron-angle-value', 90);">90&deg;</button>
                 <button onclick="targetSliderForResult('chevron-depth', 'chevron-angle-value', 120);">120&deg;</button></span>
             </div>
-            
+
             <label>
                 <input type="checkbox" id="sync-positions" checked>
                 Sync chevron positions
@@ -322,7 +321,7 @@
                 <button onclick="targetSliderForResult('crossover-depth', 'crossover-angle-value', 120, true);">120&deg;</button></span>
             </span>
             </div>
-            
+
             <label>
                 <input type="checkbox" id="sync-crossover-positions" checked>
                 Sync crossover positions
@@ -418,7 +417,7 @@
 
             const globalOffsetX = Number(offsetX.value);
             const globalOffsetY = Number(offsetY.value);
-            
+
             // Calculate vertices for downward-pointing triangle
             const x1 = centerCoordinates[0] - halfSize;
             const y1 = centerCoordinates[1] - height/2;
@@ -426,7 +425,7 @@
             const y2 = centerCoordinates[1] - height/2;
             const x3 = centerCoordinates[0];
             const y3 = centerCoordinates[1] + height/2;
-            
+
             return {
                 path: `M ${x1 + globalOffsetX} ${y1 + globalOffsetY} L ${x2 + globalOffsetX} ${y2 + globalOffsetY} L ${x3 + globalOffsetX} ${y3 + globalOffsetY} Z`,
                 vertices: [[x1 + globalOffsetX, y1 + globalOffsetY], [x2 + globalOffsetX, y2 + globalOffsetY], [x3 + globalOffsetX, y3 + globalOffsetY]]
@@ -455,26 +454,26 @@
             const length = Math.sqrt(dx * dx + dy * dy);
             const unitX = dx / length;
             const unitY = dy / length;
-            
+
             // Calculate chevron points
             const chevronWidth = width * 1.5;  // Make chevron slightly wider than stroke
             const depthMultiplier = Number(chevronDepthSlider.value);
             const chevronDepth = width * depthMultiplier;    // Depth of chevron cut
-            
+
             // Calculate middle point of the line
             const midX = startPoint[0] + (endPoint[0] - startPoint[0]) * position;
             const midY = startPoint[1] + (endPoint[1] - startPoint[1]) * position;
-            
+
             // Calculate points for chevron that points along the line direction
             const chevronPoint1X = midX + unitX * chevronDepth/2;
             const chevronPoint1Y = midY + unitY * chevronDepth/2;
             const chevronPoint2X = midX - unitX * chevronDepth/2;
             const chevronPoint2Y = midY - unitY * chevronDepth/2;
-            
+
             // Calculate the width points perpendicular to the line
             const perpX = -unitY;  // Perpendicular vector
             const perpY = unitX;
-            
+
             // Create the four points of the chevron
             const p1x = chevronPoint1X + perpX * chevronWidth/2;
             const p1y = chevronPoint1Y + perpY * chevronWidth/2;
@@ -484,9 +483,9 @@
             const p3y = chevronPoint2Y;
 
             document.getElementById('chevron-angle-value').innerText = calculateAngle([[p1x, p1y], [p2x, p2y], [p3x, p3y]])[2].toFixed(2);
-            
-            return `M ${p1x} ${p1y} 
-                    L ${p3x} ${p3y} 
+
+            return `M ${p1x} ${p1y}
+                    L ${p3x} ${p3y}
                     L ${p2x} ${p2y}`;
         }
 
@@ -496,18 +495,18 @@
 
             const angle = Math.atan2(dy, dx);
             const perpAngle = angle + Math.PI/2;
-            
+
             // Calculate center point using the position parameter (0-100%)
             const centerX = startPoint[0] + Math.cos(perpAngle) * (-0.5 * width) + (dx * (position / 100));
             const centerY = startPoint[1] +  Math.sin(perpAngle) * (-0.5* width) + (dy * (position / 100));
-            
+
             // Calculate the angles for the three points of the triangle
             // Rotate everything by 60 degrees (π/3 radians) from the perpendicular
             const rotationAngle = Math.PI/3;  // 60 degrees
             const point1Angle = angle - Math.PI/2 + rotationAngle;
             const point2Angle = point1Angle + (2 * Math.PI/3);  // Add 120 degrees for equilateral triangle
             const point3Angle = point2Angle + (2 * Math.PI/3);  // Add another 120 degrees
-            
+
             // Calculate the three points of the triangle
             const radius = width;  // Keep the size contained within the stroke width
             const point1X = centerX + Math.cos(point1Angle) + (dx * depth);
@@ -516,7 +515,7 @@
             const point2Y = centerY + Math.sin(point2Angle) * radius * .5;
             const point3X = centerX + Math.cos(point3Angle) - (dx * depth);
             const point3Y = centerY + Math.sin(point3Angle) - (dy * depth);
-            
+
             document.getElementById('crossover-angle-value').innerText = (180 - calculateAngle([[point1X, point1Y], [point2X, point2Y], [point3X, point3Y]])[1]).toFixed(2);
 
             // Create the triangular path
@@ -529,18 +528,18 @@
 
             const angle = Math.atan2(dy, dx);
             const perpAngle = angle + Math.PI/2;
-            
+
             // Calculate center point using the position parameter (0-100%)
             const centerX = startPoint[0] + Math.cos(perpAngle) * (width * .5) + (dx * (position / 100));
             const centerY = startPoint[1] + Math.sin(perpAngle) * (width * .5) + (dy * (position / 100));
-            
+
             // Calculate the angles for the three points of the triangle
             // Rotate everything by 60 degrees (π/3 radians) from the perpendicular
             const rotationAngle = 0;  // 60 degrees
             const point1Angle = angle - Math.PI/2 + rotationAngle;
             const point2Angle = point1Angle + (2 * Math.PI/3);  // Add 120 degrees for equilateral triangle
             const point3Angle = point2Angle + (2 * Math.PI/3);  // Add another 120 degrees
-            
+
             // Calculate the three points of the triangle
             const radius = width;  // Keep the size contained within the stroke width
             const point1X = centerX + Math.cos(point1Angle) * radius * .5;
@@ -549,7 +548,7 @@
             const point2Y = centerY + Math.sin(point2Angle) + (dy * depth);
             const point3X = centerX + Math.cos(point3Angle) - (dx * depth);
             const point3Y = centerY + Math.sin(point3Angle) - (dy * depth);
-        
+
             // Create the triangular path
             return `M ${point1X} ${point1Y} L ${point2X} ${point2Y} L ${point3X} ${point3Y} Z`;
         }
@@ -608,7 +607,7 @@
 
             history.pushState(null, null, '#' + btoa(JSON.stringify(savedData)));
         }
-        
+
         function downloadSVG(svgElementId, filename) {
             // Get the SVG element
             const svgElement = document.getElementById(svgElementId);
@@ -618,31 +617,31 @@
 
             // Clone the SVG to avoid modifying the original
             const svgClone = svgElement.cloneNode(true);
-            
+
             // Ensure proper XML namespaces are set
             svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
             svgClone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
-            
+
             // Get the SVG as a string
             const svgData = new XMLSerializer().serializeToString(svgClone);
-            
+
             // Create a Blob with the SVG data
             const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-            
+
             // Create the download URL
             const url = URL.createObjectURL(svgBlob);
-            
+
             // Create a temporary link element
             const downloadLink = document.createElement('a');
             downloadLink.href = url;
             downloadLink.download = filename.endsWith('.svg') ? filename : `${filename}.svg`;
-            
+
             // Append link to body (required for Firefox)
             document.body.appendChild(downloadLink);
-            
+
             // Trigger the download
             downloadLink.click();
-            
+
             // Clean up
             document.body.removeChild(downloadLink);
             URL.revokeObjectURL(url);
@@ -677,19 +676,19 @@
             img.onload = () => {
                 // Draw the image on the canvas
                 ctx.drawImage(img, 0, 0);
-                
+
                 // Convert canvas to blob
                 canvas.toBlob((blob) => {
                     // Create download link
                     const downloadLink = document.createElement('a');
                     downloadLink.href = URL.createObjectURL(blob);
                     downloadLink.download = filename || 'download.png';
-                    
+
                     // Trigger download
                     document.body.appendChild(downloadLink);
                     downloadLink.click();
                     document.body.removeChild(downloadLink);
-                    
+
                     // Clean up
                     URL.revokeObjectURL(downloadLink.href);
                     URL.revokeObjectURL(url);
@@ -707,7 +706,7 @@
                     if (inputValue.fieldType === 'value') {
                         document.getElementById(inputValue.fieldName).value = inputValue.value;
                     } else {
-                        document.getElementById(inputValue.fieldName).checked = inputValue.value;  
+                        document.getElementById(inputValue.fieldName).checked = inputValue.value;
                     }
                 }
                 updateTriangles();
@@ -718,8 +717,8 @@
         // returns angle formed in degrees for each angle
         function calculateAngle(points) {
             // Validate input
-            if (!Array.isArray(points) || points.length !== 3 || 
-                !points.every(p => Array.isArray(p) && p.length === 2 && 
+            if (!Array.isArray(points) || points.length !== 3 ||
+                !points.every(p => Array.isArray(p) && p.length === 2 &&
                 p.every(coord => typeof coord === 'number'))) {
                 throw new Error('Invalid input: Expected array of three points [[x1,y1], [x2,y2], [x3,y3]]');
             }
@@ -735,7 +734,7 @@
             if (a === 0 || b === 0 || c === 0) {
                 throw new Error('Invalid points: Two points cannot be identical');
             }
-            
+
             // Check if points form a valid triangle
             if (a + b <= c || b + c <= a || a + c <= b) {
                 return [180, 180, 180];
@@ -749,7 +748,7 @@
 
             // Convert to degrees
             const toDegrees = angle => angle * (180 / Math.PI);
-            
+
             // Return angles rounded to 2 decimal places
             return [
                 Number(toDegrees(angle1).toFixed(2)),
@@ -878,7 +877,7 @@
                     const choppedPathData =  triangleData.path.split('L')[0] + triangleData.path.split('L')[2].slice(0, -1)
                     document.getElementById('triangleWeaveTopMask').setAttribute('d', shouldWeave ? choppedPathData : '');
                 }
-                
+
                 // Create chevron on the selected leg of each triangle
                 const chevron = document.getElementById(`chevron${i + 1}`);
                 const vertices = triangleData.vertices;
@@ -943,7 +942,7 @@
             slider.addEventListener('input', function() {
                 const newPosition = this.value;
                 value.textContent = Number(newPosition).toFixed(2);
-                
+
                 // If sync is enabled, update all position sliders
                 if (document.getElementById('sync-positions').checked) {
                     for (let j = 1; j <= 3; j++) {
@@ -955,7 +954,7 @@
                         }
                     }
                 }
-                
+
                 updateTriangles();
             });
         }
@@ -967,7 +966,7 @@
             slider.addEventListener('input', function() {
                 const newPosition = this.value;
                 value.textContent = Number(newPosition).toFixed(2);
-                
+
                 // If sync is enabled, update all position sliders
                 if (document.getElementById('sync-crossover-positions').checked) {
                     for (let j = 1; j <= 3; j++) {
@@ -979,7 +978,7 @@
                         }
                     }
                 }
-                
+
                 updateTriangles();
             });
         }
@@ -1009,7 +1008,7 @@
             let lowerBound = Number(document.getElementById(changableDiv).min);
             let output = document.getElementById(outputDiv);
 
-            for (i = 0; i <= 10; i++) {
+            for (i = 0; i <= 20; i++) {
                 let midpoint = (upperBound + lowerBound) / 2;
 
                 document.getElementById(changableDiv).value = midpoint;
