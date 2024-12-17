@@ -28,8 +28,6 @@
             gap: 1rem;
         }
 
-
-
         .controls, .chevron-controls, .crossover-controls {
             background: white;
             padding: 1.5rem;
@@ -85,9 +83,19 @@
             background: #444;
         }
 
+        span > button {
+            padding: .3rem;
+            margin: 0;
+        }
+
         @media (max-width: 768px) {
             body {
                 flex-direction: column;
+                padding: 0.25rem;
+            }
+
+            .controls, .chevron-controls, .crossover-controls {
+                padding: 0.2rem;
             }
             
             #canvas {
