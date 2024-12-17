@@ -17,8 +17,12 @@
         #canvas {
             border: 1px solid #ddd;
             background: white;
-            position: sticky;
             top: 1rem;
+            cursor: pointer;
+        }
+
+        .canvas-regular-size {
+            position: sticky;
         }
 
         .controls-wrapper {
@@ -98,7 +102,7 @@
                 padding: 0.2rem;
             }
 
-            #canvas {
+            .canvas-regular-size {
                 width: 100%;
                 max-height: 50vh;
                 position: sticky;
@@ -106,7 +110,7 @@
         }
 
         @media (min-width: 768px) {
-            #canvas {
+            .canvas-regular-size {
                 max-width: 40vw;
                 max-height: min(40vw, 50vh);
             }
@@ -127,41 +131,47 @@
         .design-options {
             margin: 3px;
         }
+
+        .canvas-full-screen {
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+        }
     </style>
 </head>
 <body>
-    <svg id="canvas" viewBox="0 0 800 800">
+    <svg id="canvas" class="canvas-regular-size" viewBox="0 0 800 800">
         <defs>
             <mask id="mask1" maskUnits="userSpaceOnUse"> <!-- must account for big strokes -->
-                <rect width="100%" height="100%" fill="white"/>
-                <path id="chevron1" fill="none" stroke="black" stroke-width="1"/>
-                <path id="crossover1" fill="black" stroke="none" stroke-width="1"/>
-                <path id="crossover1opposing" fill="black" stroke="none" stroke-width="1"/>
+                <rect shape-rendering="geometricPrecision" width="100%" height="100%" fill="white"/>
+                <path shape-rendering="geometricPrecision" id="chevron1" fill="none" stroke="black" stroke-width="1"/>
+                <path shape-rendering="geometricPrecision" id="crossover1" fill="black" stroke="none" stroke-width="1"/>
+                <path shape-rendering="geometricPrecision" id="crossover1opposing" fill="black" stroke="none" stroke-width="1"/>
             </mask>
             <mask id="mask2" maskUnits="userSpaceOnUse">
-                <rect width="100%" height="100%" fill="white"/>
-                <path id="chevron2" fill="none" stroke="black" stroke-width="1"/>
-                <path id="crossover2" fill="black" stroke="none" stroke-width="1"/>
-                <path id="crossover2opposing" fill="black" stroke="none" stroke-width="1"/>
+                <rect shape-rendering="geometricPrecision" width="100%" height="100%" fill="white"/>
+                <path shape-rendering="geometricPrecision" id="chevron2" fill="none" stroke="black" stroke-width="1"/>
+                <path shape-rendering="geometricPrecision" id="crossover2" fill="black" stroke="none" stroke-width="1"/>
+                <path shape-rendering="geometricPrecision" id="crossover2opposing" fill="black" stroke="none" stroke-width="1"/>
             </mask>
             <mask id="mask3" maskUnits="userSpaceOnUse">
-                <rect width="100%" height="100%" fill="white"/>
-                <path id="chevron3" fill="none" stroke="black" stroke-width="1"/>
-                <path id="crossover3" fill="black" stroke="none" stroke-width="1"/>
-                <path id="crossover3opposing" fill="black" stroke="none" stroke-width="1"/>
-                <path id="triangleWeaveBackingMask" fill="none" stroke="black" />
-                <path id="triangleWeaveTopMask" fill="none" stroke="black" />
+                <rect shape-rendering="geometricPrecision" width="100%" height="100%" fill="white"/>
+                <path shape-rendering="geometricPrecision" id="chevron3" fill="none" stroke="black" stroke-width="1"/>
+                <path shape-rendering="geometricPrecision" id="crossover3" fill="black" stroke="none" stroke-width="1"/>
+                <path shape-rendering="geometricPrecision" id="crossover3opposing" fill="black" stroke="none" stroke-width="1"/>
+                <path shape-rendering="geometricPrecision" id="triangleWeaveBackingMask" fill="none" stroke="black" />
+                <path shape-rendering="geometricPrecision" id="triangleWeaveTopMask" fill="none" stroke="black" />
             </mask>
         </defs>
 
-        <path id="triangle2backing" fill="none" stroke="white"/>
-        <path id="triangle2" fill="none" stroke="black" mask="url(#mask2)"/>
+        <path shape-rendering="geometricPrecision" id="triangle2backing" fill="none" stroke="white"/>
+        <path shape-rendering="geometricPrecision" id="triangle2" fill="none" stroke="black" mask="url(#mask2)"/>
 
-        <path id="triangle1backing" fill="none" stroke="white"/>
-        <path id="triangle1" fill="none" stroke="black" mask="url(#mask1)"/>
+        <path shape-rendering="geometricPrecision" id="triangle1backing" fill="none" stroke="white"/>
+        <path shape-rendering="geometricPrecision" id="triangle1" fill="none" stroke="black" mask="url(#mask1)"/>
 
-        <path id="triangle3backing" fill="none" stroke="white" mask="url(#mask3)"/>
-        <path id="triangle3" fill="none" stroke="black" mask="url(#mask3)"/>
+        <path shape-rendering="geometricPrecision" id="triangle3backing" fill="none" stroke="white" mask="url(#mask3)"/>
+        <path shape-rendering="geometricPrecision" id="triangle3" fill="none" stroke="black" mask="url(#mask3)"/>
     </svg>
 
     <div class="controls-wrapper">
@@ -929,6 +939,7 @@
         document.getElementById('saveToURL').addEventListener('click', saveToURL);
         document.getElementById('copyToClipboard').addEventListener('click', () => {saveToURL(); navigator.clipboard.writeText(window.location.hash.slice(1)); history.replaceState(null, null, window.location.pathname + window.location.search)});
 
+        document.getElementById('canvas').addEventListener('click', () => {document.getElementById('canvas').classList.toggle('canvas-regular-size'); document.getElementById('canvas').classList.toggle('canvas-full-screen');})
 
         // Set up radio button controls
         document.querySelectorAll('input[type="radio"]').forEach(radio => {
