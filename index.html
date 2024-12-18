@@ -197,14 +197,10 @@
                 <input type="range" id="backing-size" min="0" max="50" value="35">
                 <span id="backing-value">35</span>
             </div>
-            <label>
-                <input type="checkbox" id="should-weave" checked>
-                Overlay weave correction
-            </label>
         </div>
 
         <div class="controls">
-            <h2>Global Offsets</h2>
+            <h2>Global Corrections</h2>
             <div class="slider-container">
                 <label for="x-offset">X Offset</label>
                 <input type="range" id="x-offset" min="-200" max="200" value="50">
@@ -216,7 +212,15 @@
                 <span id="y-offset-value">-70</span>
             </div>
             <button id="reset-global">Reset Global Offsets</button>
-            <button id="correct-global">Correct Global Offsets</button>
+            <button id="correct-global">Correct Global Offsets</button><br>
+            <label>
+                <input type="checkbox" id="should-weave" checked>
+                Overlay weave correction
+            </label><br>
+            <label>
+                <input type="checkbox" id="should-edge-correct" checked>
+                Weave correction overlay expansion
+            </label>
         </div>
 
         <div class="chevron-controls">
@@ -809,6 +813,7 @@
         const crossoverDepthValue = document.getElementById('crossover-depth-value');
 
         const shouldWeaveCheckbox = document.getElementById('should-weave');
+        const shouldWeaveEdgeCorrectionCheckbox = document.getElementById('should-edge-correct');
 
         const offsetX = document.getElementById('x-offset');
         const offsetY = document.getElementById('y-offset');
@@ -833,6 +838,7 @@
             const offsetYAmount = Number(offsetY.value);
 
             const shouldWeave = shouldWeaveCheckbox.checked;
+            const shouldCorrectWeave = shouldWeaveEdgeCorrectionCheckbox.checked;
 
             strokeWidthValue.textContent = width;
             backingValue.textContent = backing;
@@ -858,7 +864,7 @@
             });
 
             // need correcting value for crisp edges
-            triangleWeaveBackingMask.setAttribute('stroke-width', width + Number(backingSlider.value) - 0.8);
+            triangleWeaveBackingMask.setAttribute('stroke-width', width + Number(backingSlider.value) - (shouldCorrectWeave ? 1 : 0));
 
             // update chevron stroke width
             [chevron1, chevron2, chevron3].forEach(chevron => {
@@ -933,6 +939,7 @@
         crossoverDepthSlider.addEventListener('input', updateTriangles);
 
         shouldWeaveCheckbox.addEventListener('change', updateTriangles);
+        shouldWeaveEdgeCorrectionCheckbox.addEventListener('change', updateTriangles);
 
         offsetX.addEventListener('input', updateTriangles);
         offsetY.addEventListener('input', updateTriangles);
