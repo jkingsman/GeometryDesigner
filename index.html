@@ -213,6 +213,11 @@
                 <input type="range" id="y-offset" min="-200" max="200" value="-70">
                 <span id="y-offset-value">-70</span>
             </div>
+            <div class="slider-container">
+                <label for="rotation">Rotation</label>
+                <input type="range" id="rotation" min="0" max="359" value="0">
+                <span id="rotation-value">0</span>
+            </div>
             <button id="reset-global">Reset Global Offsets</button>
             <button id="correct-global">Correct Global Offsets</button><br>
             <label>
@@ -488,7 +493,7 @@
 
             // Calculate chevron points
             const chevronWidth = width * 1.5;  // Make chevron slightly wider than stroke
-            const depthMultiplier = Number(chevronDepthSlider.value) * (document.getElementById('invert-chevrons').checked ? -1 : 1);
+            const depthMultiplier = Number(chevronDepthSlider.value) * (invertChevrons.checked ? -1 : 1);
             const chevronDepth = width * depthMultiplier;    // Depth of chevron cut
 
             // Calculate middle point of the line
@@ -913,9 +918,13 @@
         const chevronStrokeValue = document.getElementById('chevron-stroke-value');
         const chevronDepthSlider = document.getElementById('chevron-depth');
         const chevronDepthValue = document.getElementById('chevron-depth-value');
+        const invertChevrons = document.getElementById('invert-chevrons');
 
         const crossoverDepthSlider = document.getElementById('crossover-depth');
         const crossoverDepthValue = document.getElementById('crossover-depth-value');
+
+        const rotationSlider = document.getElementById('rotation');
+        const rotationValue = document.getElementById('rotation-value');
 
         const shouldWeaveCheckbox = document.getElementById('should-weave');
         const shouldWeaveEdgeCorrectionCheckbox = document.getElementById('should-edge-correct');
@@ -941,6 +950,7 @@
 
             const offsetXAmount = Number(offsetX.value);
             const offsetYAmount = Number(offsetY.value);
+            const rotation = Number(rotationSlider.value);
 
             const shouldWeave = shouldWeaveCheckbox.checked;
             const shouldCorrectWeave = shouldWeaveEdgeCorrectionCheckbox.checked;
@@ -957,6 +967,7 @@
 
             offsetXValue.textContent = offsetXAmount;
             offsetYValue.textContent = offsetYAmount;
+            rotationValue.innerText = rotation;
 
             // update triangle stroke width
             [triangle1, triangle2, triangle3, triangleWeaveTopMask].forEach(triangle => {
@@ -1029,26 +1040,15 @@
                 crossoverOpposing.setAttribute('d', opposingCrossoverPath);
             });
 
+            document.getElementById('canvas').style.transform = `rotate(${rotation}deg)`;
+
             //saveToURL();
         }
 
         // Set up listeners to update triangle
-        strokeWidthSlider.addEventListener('input', updateTriangles);
-        backingSlider.addEventListener('input', updateTriangles);
-        triangleSizeSlider.addEventListener('input', updateTriangles);
-        spacingSlider.addEventListener('input', updateTriangles);
-
-        chevronStrokeSlider.addEventListener('input', updateTriangles);
-        chevronDepthSlider.addEventListener('input', updateTriangles);
-        document.getElementById('invert-chevrons').addEventListener('input', updateTriangles);
-
-        crossoverDepthSlider.addEventListener('input', updateTriangles);
-
-        shouldWeaveCheckbox.addEventListener('change', updateTriangles);
-        shouldWeaveEdgeCorrectionCheckbox.addEventListener('change', updateTriangles);
-
-        offsetX.addEventListener('input', updateTriangles);
-        offsetY.addEventListener('input', updateTriangles);
+        for (element of [strokeWidthSlider, backingSlider, triangleSizeSlider, spacingSlider, chevronStrokeSlider, chevronDepthSlider, crossoverDepthSlider, shouldWeaveCheckbox, shouldWeaveEdgeCorrectionCheckbox, offsetX, offsetY, rotationSlider, invertChevrons]){
+            element.addEventListener('input', updateTriangles);
+        }
 
         document.getElementById('downloadPNG').addEventListener('click', () => {saveToURL(); downloadSVGAsPNG('canvas', window.location.hash.slice(1)); history.replaceState(null, null, window.location.pathname + window.location.search)});
         document.getElementById('downloadPNGShort').addEventListener('click', () => {saveToURL(); downloadSVGAsPNG('canvas', `design_${Date.now()}.png`); history.replaceState(null, null, window.location.pathname + window.location.search)});
