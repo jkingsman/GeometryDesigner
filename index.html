@@ -665,6 +665,73 @@
             URL.revokeObjectURL(url);
         }
 
+
+        function trimCanvas(canvas) {
+            const ctx = canvas.getContext('2d');
+            const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = pixels.data;
+            let bounds = {
+                top: null,
+                left: null,
+                right: null,
+                bottom: null
+            };
+
+            // Scan from top to bottom for the first non-white pixel
+            for (let y = 0; y < canvas.height; y++) {
+                for (let x = 0; x < canvas.width; x++) {
+                    const index = (y * canvas.width + x) * 4;
+                    const alpha = data[index + 3];
+                    // Check if pixel is not white (allowing for some tolerance)
+                    if (data[index] < 255 || data[index + 1] < 255 || data[index + 2] < 255 || alpha < 255) {
+                        bounds.top = bounds.top !== null ? bounds.top : y;
+                        bounds.bottom = y;
+                    }
+                }
+            }
+
+            // Scan from left to right for the first non-white pixel
+            for (let x = 0; x < canvas.width; x++) {
+                for (let y = 0; y < canvas.height; y++) {
+                    const index = (y * canvas.width + x) * 4;
+                    const alpha = data[index + 3];
+                    if (data[index] < 255 || data[index + 1] < 255 || data[index + 2] < 255 || alpha < 255) {
+                        bounds.left = bounds.left !== null ? bounds.left : x;
+                        bounds.right = x;
+                    }
+                }
+            }
+
+            // If no non-white pixels were found, return original canvas
+            if (bounds.top === null) {
+                return canvas;
+            }
+
+            // Add a small padding
+            const padding = 10;
+            bounds.top = Math.max(0, bounds.top - padding);
+            bounds.left = Math.max(0, bounds.left - padding);
+            bounds.right = Math.min(canvas.width - 1, bounds.right + padding);
+            bounds.bottom = Math.min(canvas.height - 1, bounds.bottom + padding);
+
+            // Create new canvas with trimmed dimensions
+            const trimmedWidth = bounds.right - bounds.left + 1;
+            const trimmedHeight = bounds.bottom - bounds.top + 1;
+            const trimmedCanvas = document.createElement('canvas');
+            trimmedCanvas.width = trimmedWidth;
+            trimmedCanvas.height = trimmedHeight;
+
+            // Draw trimmed image
+            const trimmedCtx = trimmedCanvas.getContext('2d');
+            trimmedCtx.drawImage(
+                canvas,
+                bounds.left, bounds.top, trimmedWidth, trimmedHeight,
+                0, 0, trimmedWidth, trimmedHeight
+            );
+
+            return trimmedCanvas;
+        }
+
         function downloadSVGAsPNG(svgId, filename) {
             // Get the SVG element
             const svgElement = document.getElementById(svgId);
@@ -714,8 +781,9 @@
                 ctx.drawImage(img, 0, 0, width, height);
 
                 // Convert to PNG and initiate download
+                const trimmedCanvas = trimCanvas(canvas);
                 try {
-                    const pngUrl = canvas.toDataURL('image/png');
+                    const pngUrl = trimmedCanvas.toDataURL('image/png');
                     const downloadLink = document.createElement('a');
                     downloadLink.download = filename || 'download.png';
                     downloadLink.href = pngUrl;
