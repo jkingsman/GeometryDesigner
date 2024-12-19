@@ -429,6 +429,8 @@
             <button class="design-options" id="downloadSVGShort">Download as SVG [short name]</button>
             <br>
             <button class="design-options" id="saveToURL">Save to URL</button>
+            <button class="design-options" id="clearURL">Clear URL</button>
+            <br>
             <button class="design-options" id="copyToClipboard">Copy descriptor to clipboard</button>
         </div>
 
@@ -1053,6 +1055,7 @@
         document.getElementById('downloadSVG').addEventListener('click', () => {saveToURL(); downloadSVG('canvas', window.location.hash.slice(1)); history.replaceState(null, null, window.location.pathname + window.location.search)});
         document.getElementById('downloadSVGShort').addEventListener('click', () => {saveToURL(); downloadSVG('canvas', `design_${Date.now()}.svg`); history.replaceState(null, null, window.location.pathname + window.location.search)});
         document.getElementById('saveToURL').addEventListener('click', saveToURL);
+        document.getElementById('clearURL').addEventListener('click', () => {history.replaceState(null, null, window.location.pathname + window.location.search)});
         document.getElementById('copyToClipboard').addEventListener('click', () => {saveToURL(); navigator.clipboard.writeText(window.location.hash.slice(1)); history.replaceState(null, null, window.location.pathname + window.location.search)});
 
         document.getElementById('canvas').addEventListener('click', () => {document.getElementById('canvas').classList.toggle('canvas-regular-size'); document.getElementById('canvas').classList.toggle('canvas-full-screen');})
