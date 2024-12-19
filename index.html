@@ -164,6 +164,8 @@
             </mask>
         </defs>
 
+        <rect width="800" height="800" x="0" y="0" fill="white" stroke="white"></rect>
+
         <path shape-rendering="geometricPrecision" id="triangle2backing" fill="none" stroke="white"/>
         <path shape-rendering="geometricPrecision" id="triangle2" fill="none" stroke="black" mask="url(#mask2)"/>
 
@@ -667,52 +669,73 @@
             // Get the SVG element
             const svgElement = document.getElementById(svgId);
             if (!svgElement) {
-                console.error(`SVG element with id "${svgId}" not found`);
+                console.error('SVG element not found');
                 return;
             }
 
-            // Get the SVG dimensions
-            const svgRect = svgElement.getBoundingClientRect();
-            const width = svgRect.width;
-            const height = svgRect.height;
-
-            // Create a canvas element
-            const canvas = document.createElement('canvas');
-            canvas.width = width * 2;
-            canvas.height = height * 2;
-            const ctx = canvas.getContext('2d');
-
-            // Create a Blob from the SVG
+            // Get SVG data and dimensions
             const svgData = new XMLSerializer().serializeToString(svgElement);
+
+            // Get the viewBox values
+            const viewBox = svgElement.getAttribute('viewBox');
+            let width, height;
+
+            if (viewBox) {
+                const [, , vbWidth, vbHeight] = viewBox.split(' ').map(Number);
+                width = vbWidth;
+                height = vbHeight;
+            } else {
+                // If no viewBox, try to get width/height directly
+                width = parseFloat(svgElement.getAttribute('width')) || svgElement.getBoundingClientRect().width;
+                height = parseFloat(svgElement.getAttribute('height')) || svgElement.getBoundingClientRect().height;
+            }
+
+            // Create canvas with proper dimensions
+            const canvas = document.createElement('canvas');
+            const scale = 2; // Increase resolution for better quality
+            canvas.width = width * scale;
+            canvas.height = height * scale;
+
+            const ctx = canvas.getContext('2d');
+            ctx.scale(scale, scale);
+
+            // Create a blob from the SVG data
             const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-            const url = URL.createObjectURL(svgBlob);
+            const svgUrl = URL.createObjectURL(svgBlob);
 
-            // Create an image from the SVG
+            // Create image object
             const img = new Image();
-            img.onload = () => {
-                // Draw the image on the canvas
-                ctx.drawImage(img, 0, 0);
 
-                // Convert canvas to blob
-                canvas.toBlob((blob) => {
-                    // Create download link
+            img.onload = function() {
+                // Clear the canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Draw SVG to canvas at the correct dimensions
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Convert to PNG and initiate download
+                try {
+                    const pngUrl = canvas.toDataURL('image/png');
                     const downloadLink = document.createElement('a');
-                    downloadLink.href = URL.createObjectURL(blob);
                     downloadLink.download = filename || 'download.png';
-
-                    // Trigger download
-                    document.body.appendChild(downloadLink);
+                    downloadLink.href = pngUrl;
                     downloadLink.click();
-                    document.body.removeChild(downloadLink);
 
-                    // Clean up
-                    URL.revokeObjectURL(downloadLink.href);
-                    URL.revokeObjectURL(url);
-                }, 'image/png');
+                    // Cleanup
+                    URL.revokeObjectURL(svgUrl);
+                } catch (e) {
+                    console.error('Error converting to PNG:', e);
+                }
             };
 
-            // Set image source to SVG URL
-            img.src = url;
+            // Handle potential errors
+            img.onerror = function(e) {
+                console.error('Error loading SVG:', e);
+                URL.revokeObjectURL(svgUrl);
+            };
+
+            // Set base URI to handle potential relative URLs in SVG
+            img.src = svgUrl;
         }
 
         function loadFromURL() {
