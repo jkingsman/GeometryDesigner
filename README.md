@@ -4,5 +4,5 @@
 
 Interactive SVG designer for a logo/design.
 
-80% of the code in this repo is LLM-generated; please don't blame the coding practices on me.
+80% of the code in this repo is LLM-generated a an experiment in LLM-led development; please don't blame the coding practices on me :badpokerface:
 
