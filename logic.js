@@ -377,17 +377,22 @@ function downloadSVGAsPNG(svgId, filename) {
 }
 
 function loadFromURL() {
-    const data = window.location.hash.slice(1);
-    if (data) {
-        for (inputValue of JSON.parse(atob(data))) {
-            if (inputValue.fieldType === 'value') {
-                document.getElementById(inputValue.fieldName).value = inputValue.value;
-            } else {
-                document.getElementById(inputValue.fieldName).checked = inputValue.value;
-            }
-        }
-        updateTriangles();
+    let data = window.location.hash.slice(1);
+
+    if (!data) {
+        data = bookmarks['candidates']["[current favorite] external crossover/mouth, clustered"]
     }
+
+    // use url data
+    for (inputValue of JSON.parse(atob(data))) {
+        if (inputValue.fieldType === 'value') {
+            document.getElementById(inputValue.fieldName).value = inputValue.value;
+        } else {
+            document.getElementById(inputValue.fieldName).checked = inputValue.value;
+        }
+    }
+
+    updateTriangles();
 }
 
 // accepts [[x1,y1], [x2,y2], [x3,y3]]
@@ -696,4 +701,3 @@ function targetSliderForResult(changableDiv, outputDiv, target) {
 }
 renderBookmarkedDesigns();
 loadFromURL();
-updateTriangles();
