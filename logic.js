@@ -619,6 +619,26 @@ document.getElementById('canvas').addEventListener('click', () => {document.getE
 document.getElementById('reset-global').addEventListener('click', () => {document.getElementById('x-offset').value = 0; document.getElementById('y-offset').value = 0; updateTriangles();})
 document.getElementById('correct-global').addEventListener('click', () => {document.getElementById('x-offset').value = 50; document.getElementById('y-offset').value = -70; updateTriangles();})
 
+// group movement
+document.querySelectorAll('.group-movement').forEach(button => {button.addEventListener('click', (e) => {
+    const chevronPosition = document.getElementById("position1");
+    const crossoverPosition = document.getElementById("crossoverPosition1");
+
+    if (e.target.dataset.direction == 'negative') {
+        chevronPosition.value = chevronPosition.value - Number(e.target.dataset.amount) / 100;
+        crossoverPosition.value = crossoverPosition.value - Number(e.target.dataset.amount);
+    } else {
+        chevronPosition.value = Number(chevronPosition.value) + Number(e.target.dataset.amount) / 100;
+        crossoverPosition.value = Number(crossoverPosition.value) + Number(e.target.dataset.amount);
+    }
+
+    const updateEvent = new Event("input", {
+        bubbles: true,
+      });
+
+    chevronPosition.dispatchEvent(updateEvent);
+    crossoverPosition.dispatchEvent(updateEvent);
+})});
 
 // Set up radio button controls
 document.querySelectorAll('input[type="radio"]').forEach(radio => {
